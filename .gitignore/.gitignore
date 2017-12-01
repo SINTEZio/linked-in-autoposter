@@ -1,0 +1,34 @@
+Tab Tab1 = instance.ActiveTab;
+
+Tab1.Navigate("https://www.linkedin.com/feed/");
+Tab1.WaitDownloading();
+
+instance.SetFileUploadPolicy("ok", ""); //устанавливаем политику загрузки файлов
+
+// Получаем случайный файл
+	
+//Присваиваем переменной путь к папке с файлами
+string strSourceDirectoryPath = project.Directory + @"\LinkedIn\img\";
+List<string> lstTemp = new List<string>(); //Создадим временный список
+string strResultFileName = string.Empty; //Объявим переменную, в которую будет помещён путь к файлу
+lstTemp.AddRange(Directory.GetFiles(strSourceDirectoryPath)); //используйте SearchOption.TopDirectoryOnly если не нужно искать в поддиректориях
+//Чтобы получить случайный файл
+lstTemp.Shuffle(); //Перемешиваем список файлов (если нужно получить случайный файл)
+strResultFileName = lstTemp[0];
+
+project.SendInfoToLog("Получено имя файла: " + strResultFileName);
+
+instance.SetFilesForUpload(strResultFileName);
+Tab1.FindElementByXPath("//input[contains(@id,'upload-photo')]",0).Click();
+Thread.Sleep(10000);
+Tab1.FindElementByXPath("//div[contains(@class, 'container-card')]/descendant::button[contains(@class, 'Sans')]", 0).Click();
+Thread.Sleep(5000);
+string strComment = project.Variables["text_autopost"].Value;
+string SpinResult = Macros.TextProcessing.Spintax(strComment);
+Tab1.FindElementByXPath("//div[contains(@class, 'mentions-texteditor__contenteditable')]", 0).SetValue(SpinResult, "Full");
+Thread.Sleep(7000);
+Tab1.FindElementByXPath("//button[contains(@class, 'sharing-share-box')]", 0).Click();
+Thread.Sleep(7000);
+Global.SpecialForms.AlertNotificator.Instance.DisplayAlert("Спасибо за работу!", "Пост размещен!", null, 15000);
+
+return "Ok";
